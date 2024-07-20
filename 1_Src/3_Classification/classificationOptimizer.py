@@ -3,7 +3,6 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 from dotenv import load_dotenv
-import xgboost as xgb
 import pandas as pd
 import numpy as np
 import datetime
@@ -98,6 +97,7 @@ param_grid = {
 }
 
 # Initialize the SVM model
+modelName = "svm"
 svm_model = SVC(probability=True, random_state=RANDOM_SEED)
 
 # Initialize GridSearchCV
@@ -110,10 +110,7 @@ grid_search.fit(X_train, Y_train)
 best_params = grid_search.best_params_
 best_model = grid_search.best_estimator_
 
-print("Best Parameters:\n", best_params)
-
-print("--- 🦾 Training model: {}".format(modelName))
-model.fit(X_train, Y_train)
+print("--- Best Parameters:\n", best_params)
 
 # %%
 # TO evaluate the model
@@ -190,7 +187,7 @@ for threshold in thresholds:
 
     evaluateModel(modelName,Y_test, Y_pred, threshold)
 
-    predictedLabels = applyThreshold(model.predict_proba(X), threshold)
+    predictedLabels = applyThreshold(best_model.predict_proba(X), threshold)
 
     # Convert numeric predictions back to labels
     predictedLabels = labelEncoder.inverse_transform(predictedLabels)
