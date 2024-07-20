@@ -1,7 +1,7 @@
-# %% [markdown]
+
 # ## 🔢 Description Crawler
 
-# %%
+
 # Imports
 import numpy    as np
 import pandas   as pd
@@ -13,31 +13,34 @@ import time
 import json
 import os
 
-# %% [markdown]
+
 # #### Initialization
 
-# %%
+
 print("⚡ Start - {} ⚡\n".format(datetime.datetime.now()))
 startTime = datetime.datetime.now()
 
-# %% [markdown]
+
 # #### 📥 1) Load Data 
 
-# %%
+
 DATA_PATH = "../../0_Data/3_MalCatSet.csv"
 
 # Read the data
 appsDF = pd.read_csv(DATA_PATH)
 
 # TEST
-appsDF = appsDF.head(3)
+appsDF = appsDF.head(50)
 
 print("--- #️⃣ Apps: {} ".format(appsDF.shape[0]))
 
-# %%
+
 appsDF.head(5)
 
-# %%
+
+# GP
+
+
 def getGoogleEnglishDescription(pkgName):
 	try:
 		# Use googlePlayScraper Library
@@ -60,11 +63,13 @@ def getGoogleEnglishDescription(pkgName):
 	except Exception:
 		return pd.Series([np.nan], index=['description'])
 
-# %%
+
 appsDF['gpDescription'] = appsDF['pkgName'].apply(getGoogleEnglishDescription)
 appsDF.head(3)
 
-# %%
+
+# AZ
+
 def getDescriptionFromMetaDataAndroZoo(pkgName, retries=5, delay=10):
     url = 'https://androzoo.uni.lu/api/get_gp_metadata/{}'.format(pkgName)
     params = {'apikey': os.getenv('ANDROZOO_API_KEY')}
@@ -77,7 +82,7 @@ def getDescriptionFromMetaDataAndroZoo(pkgName, retries=5, delay=10):
         if response.status_code == 200:
             return response.json()[0]['descriptionHtml']
         # Retry 
-        elif response.status_code in [502, 503]:
+        elif response.status_code in [502, 503, 400]:
             attempt += 1
             print(f"Attempt {attempt} failed with status code {response.status_code}. Retrying in {delay} seconds...")
             time.sleep(delay)
@@ -88,14 +93,11 @@ def getDescriptionFromMetaDataAndroZoo(pkgName, retries=5, delay=10):
     print("Max retries exceeded. Request failed.")
     return None
 
-# %%
 appsDF['azDescription'] = appsDF['pkgName'].apply(getDescriptionFromMetaDataAndroZoo)
 appsDF.head(3)
 
-# %% [markdown]
-# ### Filter the data.
 
-# %%
+
 # Create the 'description' column
 appsDF['description'] = appsDF['gpDescription'].fillna(appsDF['azDescription'])
 print("--- #️⃣ Apps: {} ".format(appsDF.shape[0]))
@@ -107,13 +109,14 @@ print("--- #️⃣ Apps: {} ".format(appsDF.shape[0]))
 appsDF = appsDF.drop(columns=['gpDescription', 'azDescription'])
 appsDF.head(3)
 
-# %%
-appsDF.to_csv("../TmpData/3_MalCatSet_Description.csv")
 
-# %% [markdown]
+
+appsDF.to_csv("../TmpData/3_MalCatSet_DescriptionWithAZ.csv")
+
+
 # ##### 🔚 End
 
-# %%
+
 endTime = datetime.datetime.now()
 print("\n🔚 --- End - {} --- 🔚".format(endTime))
 
