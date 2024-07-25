@@ -37,14 +37,13 @@ appsDF = pd.read_csv(DATA_PATH)
 print("--- #️⃣ Apps: {} ".format(appsDF.shape[0]))
 
 # %%
-appsDF = appsDF.head(5)
+#appsDF = appsDF.head(5)
 
 # %% [markdown]
 # #### 🔢 2) Preprocess Description
 
 # %%
 appsDF['description'] = appsDF['description'].apply(Preprocessing.preprocessDescription)
-appsDF = appsDF.drop(columns=['description'])
 appsDF.head(5)
 
 # %% [markdown]
